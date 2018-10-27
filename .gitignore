@@ -1,4 +1,5 @@
 *.jou
 *.log
 project_3_port.cache/
+project_3_port.sim/
 .Xil/
