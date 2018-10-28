@@ -64,6 +64,17 @@ component WriteStateMachine
 	);
 end component;
 
+component readPort
+port(
+    clk,rst:in std_logic;
+    input:inout std_logic_vector(7 downto 0);
+    output:out std_logic_vector(7 downto 0);
+    data_ready:in std_logic;
+    rdn:out std_logic;
+    output_state:out std_logic_vector(2 downto 0)
+);
+end component;
+
 -- Signal for this state machine
 type state is (RESET, READ, WRITE);
 signal next_state, rst_state, current_state: state;
@@ -77,6 +88,11 @@ signal write_wrn:std_logic;
 signal write_output:std_logic_vector(7 downto 0);
 signal write_state:std_logic_vector(2 downto 0);
 
+signal read_clk,read_rst:std_logic;
+signal read_state:std_logic_vector(2 downto 0);
+signal read_rdn:std_logic;
+
+
 begin
 	my_write_state_machine: WriteStateMachine
 		port map(
@@ -89,7 +105,18 @@ begin
 			wrn=>write_wrn,
 			output_state=>write_state
 		);
-		
+	
+	read_state_machine: readPort
+		port map(
+			read_clk,
+			read_rst,
+			Ram1Data,
+			light,
+			data_ready,
+			read_rdn,
+			read_state
+		);
+	
 	-- 控制总线与UART相连，与Ram1断开
 	Ram1OE<='1';
 	Ram1WE<='1';
@@ -109,7 +136,7 @@ begin
 		end if;
 	end process current_state_transform;
 	
-	next_state_transform: process(current_state, write_state, start_ready)
+	next_state_transform: process(current_state, read_state, write_state, start_ready)
 	begin
 		case current_state is
 			when RESET=>
@@ -119,8 +146,11 @@ begin
 					next_state<=RESET;
 				end if;
 			when READ=>
-				-- TODO: 需要在这里判断READ状态机是否完成读取
-				next_state<=WRITE;
+				if(read_state="110") then
+					next_state<=WRITE;
+				else
+					next_state<=READ;
+			end if;
 			when WRITE=>
 				if(write_state = "110") then
 					next_state<=RESET;
@@ -137,9 +167,12 @@ begin
 		write_clk<='0'; -- 未在WRITE状态时，write状态机时钟停止
 		wrn<='1'; -- 未在WRITE状态时，保持UART的wrn为1
 		rdn<='1'; -- 未在READ状态时，保持UART的rdn为1
+		read_clk<='0';
 		case current_state is
 			when READ=>
 				write_rst<='0';
+				read_clk<=clk_auto;
+				rdn<=read_rdn;
 			when WRITE=>
 				write_rst<='0';
 				wrn<=write_wrn; -- 进入WRITE状态后，将write状态机输出的wrn输入到UART中
@@ -147,6 +180,8 @@ begin
 			when others=>
 				write_rst<='1';
 				write_clk<='0';
+				read_rst<='1';
+				read_clk<='0';
 				wrn<='1';
 				rdn<='1';
 		end case;

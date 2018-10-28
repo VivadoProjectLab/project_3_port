@@ -56,6 +56,17 @@ component PortController
 	);
 end component;
 
+component readPort
+	port(
+		clk,rst:in std_logic;
+		input:inout std_logic_vector(7 downto 0);
+		output:out std_logic_vector(7 downto 0);
+		data_ready:in std_logic;
+		rdn:out std_logic;
+		output_state:out std_logic_vector(1 downto 0)
+    );
+end component;
+
 signal my_clk:std_logic := '1';
 signal my_rst:std_logic := '0';
 signal my_clk_auto: std_logic := '1';
@@ -107,5 +118,11 @@ begin
 		wait for clk_auto_period*6;
 		my_tsre<=not my_tsre;
 	end process tbre_and_tsre_gen;
+	
+	data_ready_gen: process
+	begin
+		wait for clk_auto_period*6;
+		my_data_ready<=not my_data_ready;
+	end process data_ready_gen;
 
 end Behavioral;
