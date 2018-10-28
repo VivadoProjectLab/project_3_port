@@ -36,40 +36,69 @@ entity testbench is
 end testbench;
 
 architecture Behavioral of testbench is
-component WriteStateMachine
+component PortController
 	port(
-		clk, rst:in std_logic;
-		input:in std_logic_vector(7 downto 0);
-		output:out std_logic_vector(7 downto 0);
+		clk, rst:in std_logic; -- clk for start, rst for reset
+		clk_auto:in std_logic; -- clk_auto for auto control of the write machine and the read machine
+		switch:in std_logic_vector(7 downto 0);
+		light:out std_logic_vector(7 downto 0);
+		Ram1OE:out std_logic;
+		Ram1WE:out std_logic;
+		Ram1EN:out std_logic;
+		data_ready:in std_logic;
 		tbre:in std_logic;
 		tsre:in std_logic;
 		wrn:out std_logic;
-		output_state:out std_logic_vector(2 downto 0)
+		rdn:out std_logic;
+		Ram1Data:inout std_logic_vector(7 downto 0);
+		write_machine_state: out std_logic_vector(2 downto 0);
+		output_state: out std_logic_vector(1 downto 0);
+		output_start_ready: out std_logic;
+		output_write_clk: out std_logic
 	);
 end component;
 
-signal my_clk:std_logic := '0';
+signal my_clk:std_logic := '1';
 signal my_rst:std_logic := '0';
+signal my_clk_auto: std_logic := '1';
+signal my_switch:std_logic_vector(7 downto 0):= "00001111";
+signal my_data_ready:std_logic := '0';
 signal my_tbre: std_logic :='0';
 signal my_tsre: std_logic :='0';
 signal my_wrn: std_logic;
-signal my_input: std_logic_vector(7 downto 0):= "00001111";
-signal my_output: std_logic_vector(7 downto 0);
-signal my_output_state: std_logic_vector(2 downto 0);
+signal my_light: std_logic_vector(7 downto 0);
+signal my_Ram1Data:std_logic_vector(7 downto 0);
+signal my_output_state:std_logic_vector(1 downto 0);
+signal my_write_machine_state: std_logic_vector(2 downto 0);
+signal my_start_ready:std_logic;
+signal my_write_clk: std_logic;
 constant clk_period:time := 20ns;
+constant clk_auto_period:time := 1ns;
 
 begin
-	my_entity: WriteStateMachine
+	my_entity: PortController
 		port map(
 			clk=>my_clk,
 			rst=>my_rst,
+			clk_auto=>my_clk_auto,
+			switch=>my_switch,
+			light=>my_light,
+			data_ready=>my_data_ready,
 			tbre=>my_tbre,
 			tsre=>my_tsre,
 			wrn=>my_wrn,
-			input=>my_input,
-			output=>my_output,
-			output_state=>my_output_state
+			Ram1Data=>my_Ram1Data,
+			output_state=>my_output_state,
+			output_start_ready=>my_start_ready,
+			write_machine_state=>my_write_machine_state,
+			output_write_clk=>my_write_clk
 		);
+	
+	clk_auto_gen: process
+	begin
+		wait for clk_auto_period/2;
+		my_clk_auto<=not my_clk_auto;
+	end process;
 	
 	clk_gen: process
 	begin
@@ -79,10 +108,10 @@ begin
 	
 	tbre_and_tsre_gen: process
 	begin
-		wait for clk_period*5;
-		my_tbre<='1';
-		wait for clk_period*3;
-		my_tsre<='1';
+		wait for clk_auto_period*6;
+		my_tbre<=not my_tbre;
+		wait for clk_auto_period*6;
+		my_tsre<=not my_tsre;
 	end process tbre_and_tsre_gen;
 
 end Behavioral;
