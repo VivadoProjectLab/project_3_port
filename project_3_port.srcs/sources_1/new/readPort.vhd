@@ -2,7 +2,7 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 2018/10/28 10:21:28
+-- Create Date: 2018/10/28 09:41:28
 -- Design Name: 
 -- Module Name: readPort - Behavioral
 -- Project Name: 
@@ -39,12 +39,12 @@ port(
     output:out std_logic_vector(7 downto 0);
     data_ready:in std_logic;
     rdn:out std_logic;
-    output_state:out std_logic_vector(1 downto 0)
+    output_state:out std_logic_vector(2 downto 0)
     );
 end readPort;
 
 architecture Behavioral of readPort is
-type state is (INI,SET,TEST,SHOW);
+type state is (INI,CACHE,SET,TEST,SHOW,FINISH);
 signal current_state,next_state:state;
 signal Nrst:std_logic;
 begin
@@ -53,6 +53,8 @@ begin
     begin
         case current_state is
             when INI=>
+                next_state<=CACHE;
+            when CACHE=>
                 next_state<=SET;
             when SET=>
                 next_state<=TEST;
@@ -63,7 +65,9 @@ begin
                     next_state<=SET;
                  end if;
             when SHOW=>
-                next_state<=SET;
+                next_state<=FINISH;
+            when FINISH=>
+                next_state<=FINISH;
             when others=>
                 next_state<=INI;
          end case;
@@ -80,33 +84,36 @@ begin
     
     action:process(current_state)
     begin
+        output_state<="000";
         case current_state is
             when INI=>
-                output_state<="00";
+                output_state<="001";
+                rdn<='1';
+            when CACHE=>
+                output_state<="010";
                 rdn<='1';
             when SET=>
                 rdn<='1';
-                input<="ZZZZZZZZ";
-                output_state<="01";
+                --input<="ZZZZZZZZ";
+                output_state<="011";
                 
             when TEST=>
-                output_state<="10";
+                output_state<="100";
                 if (data_ready='1') then
                     rdn<='0';
                 else
                     rdn<='1';
                 end if;
             when SHOW=>
-                output_state<="11";
+                output_state<="101";
                 output<=input;
                 rdn<='1';
+            when FINISH=>
+                output_state<="110";
+                rdn<='1';
             when others=>
-                output_state<="00";
+                output_state<="000";
                 rdn<='1';
             end case;
      end process action; 
-            
-        
-
-
 end Behavioral;
