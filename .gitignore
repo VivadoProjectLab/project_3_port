@@ -1,5 +1,6 @@
 *.jou
 *.log
+*.str
 project_3_port.cache/
 project_3_port.sim/
 project_3_port.hw/
