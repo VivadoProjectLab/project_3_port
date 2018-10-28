@@ -46,10 +46,7 @@ entity PortController is
 		wrn:out std_logic;
 		rdn:out std_logic;
 		Ram1Data:inout std_logic_vector(7 downto 0);
-		write_machine_state:out std_logic_vector(2 downto 0); -- test
-		output_state:out std_logic_vector(1 downto 0); -- test
-		output_start_ready:out std_logic; -- test
-		output_write_clk:out std_logic --test
+		output_state:out std_logic_vector(1 downto 0)
 	);
 end PortController;
 
@@ -99,10 +96,6 @@ begin
 	-- 一些其他的设置
 	rst_state<=RESET;
 	start_ready<=clk; -- start_ready信号，用于开始下一个周期
-
-	output_start_ready<=start_ready; -- test
-	write_machine_state<=write_state; -- test
-	output_write_clk<=write_clk; -- test
 	
 	-- 状态转移（模板）
 	current_state_transform: process(rst_n, clk_auto)
