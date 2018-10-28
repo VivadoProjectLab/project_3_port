@@ -47,7 +47,8 @@ entity PortController is
 		rdn:out std_logic;
 		Ram1Data:inout std_logic_vector(7 downto 0);
 		output_state:out std_logic_vector(1 downto 0);
-		output_write_state:out std_logic_vector(2 downto 0)
+		output_write_state:out std_logic_vector(2 downto 0);
+		output_start_ready:out std_logic
 	);
 end PortController;
 
@@ -67,7 +68,7 @@ end component;
 component readPort
 port(
     clk,rst:in std_logic;
-    input:inout std_logic_vector(7 downto 0);
+    input:in std_logic_vector(7 downto 0);
     output:out std_logic_vector(7 downto 0);
     data_ready:in std_logic;
     rdn:out std_logic;
@@ -123,7 +124,9 @@ begin
 	Ram1EN<='1';
 	-- 一些其他的设置
 	rst_state<=RESET;
+	rst_n<= not rst;
 	start_ready<=clk; -- start_ready信号，用于开始下一个周期
+	output_start_ready<=start_ready;
 	output_write_state<=write_state;
 	
 	-- 状态转移（模板）
