@@ -44,12 +44,12 @@ entity WriteStateMachine is
 end WriteStateMachine;
 
 architecture Behavioral of WriteStateMachine is
-	type state is (INITIALIZE, SETOUTPUT, SETWRN, WAITTBRE, WAITTSRE);
+	type state is (BEFOREINITIALIZE, INITIALIZE, SETOUTPUT, SETWRN, WAITTBRE, WAITTSRE, AFTEREND);
 	signal next_state, rst_state, current_state: state;
 	signal rst_n: std_logic;
 begin
 	rst_n<=not rst;
-	rst_state<=INITIALIZE;
+	rst_state<=BEFOREINITIALIZE;
 	output<=input;
 	
 	current_state_transform: process(clk, rst_n)
@@ -64,6 +64,7 @@ begin
 	next_state_transform: process(current_state, tbre, tsre)
 	begin
 		case current_state is
+			when BEFOREINITIALIZE=>next_state<=INITIALIZE;
 			when INITIALIZE=>next_state<=SETOUTPUT;
 			when SETOUTPUT=>next_state<=SETWRN;
 			when SETWRN=>next_state<=WAITTBRE;
@@ -77,9 +78,10 @@ begin
 				if(tsre = '0') then
 					next_state<=WAITTSRE;
 				else
-					next_state<=INITIALIZE;
+					next_state<=AFTEREND;
 				end if;
-			when others=>next_state<=INITIALIZE;
+			when AFTEREND=>next_state<=BEFOREINITIALIZE;
+			when others=>next_state<=BEFOREINITIALIZE;
 		end case;
 	end process next_state_transform;
 	
@@ -88,18 +90,15 @@ begin
 		wrn<='1';
 		output_state<="000";
 		case current_state is
-			when INITIALIZE=>wrn<='1';
-				output_state<="001";
+			when BEFOREINITIALIZE=>output_state<="000";
+			when INITIALIZE=>output_state<="001";
 			when SETOUTPUT=>wrn<='0';
 				output_state<="010";
-			when SETWRN=>wrn<='1';
-				output_state<="011";
-			when WAITTBRE=>wrn<='1';
-				output_state<="100";
-			when WAITTSRE=>wrn<='1';
-				output_state<="101";
-			when others=>wrn<='1';
-				output_state<="000";
+			when SETWRN=>output_state<="011";
+			when WAITTBRE=>output_state<="100";
+			when WAITTSRE=>output_state<="101";
+			when AFTEREND=>output_state<="110";
+			when others=>output_state<="000";
 		end case;
 	end process action_process;
 

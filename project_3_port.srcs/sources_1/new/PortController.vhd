@@ -127,7 +127,7 @@ begin
 				-- TODO: 需要在这里判断READ状态机是否完成读取
 				next_state<=WRITE;
 			when WRITE=>
-				if(write_state = "001") then
+				if(write_state = "110") then
 					next_state<=RESET;
 				else
 					next_state<=WRITE;
