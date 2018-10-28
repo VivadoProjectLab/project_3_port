@@ -108,13 +108,13 @@ begin
 	
 	read_state_machine: readPort
 		port map(
-			read_clk,
-			read_rst,
-			Ram1Data,
-			light,
-			data_ready,
-			read_rdn,
-			read_state
+			clk=>read_clk,
+			rst=>read_rst,
+			input=>Ram1Data,
+			output=>light,
+			data_ready=>data_ready,
+			rdn=>read_rdn,
+			output_state=>read_state
 		);
 	
 	-- 控制总线与UART相连，与Ram1断开
@@ -162,7 +162,7 @@ begin
 		end case;
 	end process next_state_transform;
 	
-	action: process(current_state, clk_auto, write_wrn)
+	action: process(current_state, clk_auto, write_wrn, read_rdn)
 	begin
 		write_clk<='0'; -- 未在WRITE状态时，write状态机时钟停止
 		wrn<='1'; -- 未在WRITE状态时，保持UART的wrn为1
@@ -170,6 +170,7 @@ begin
 		read_clk<='0';
 		case current_state is
 			when READ=>
+				read_rst<='0';
 				write_rst<='0';
 				read_clk<=clk_auto;
 				rdn<=read_rdn;

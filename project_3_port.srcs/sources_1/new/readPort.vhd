@@ -35,7 +35,7 @@ entity readPort is
 --  Port ( );
 port(
     clk,rst:in std_logic;
-    input:inout std_logic_vector(7 downto 0);
+    input:in std_logic_vector(7 downto 0);
     output:out std_logic_vector(7 downto 0);
     data_ready:in std_logic;
     rdn:out std_logic;
