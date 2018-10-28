@@ -51,10 +51,7 @@ component PortController
 		wrn:out std_logic;
 		rdn:out std_logic;
 		Ram1Data:inout std_logic_vector(7 downto 0);
-		write_machine_state: out std_logic_vector(2 downto 0);
-		output_state: out std_logic_vector(1 downto 0);
-		output_start_ready: out std_logic;
-		output_write_clk: out std_logic
+		output_state: out std_logic_vector(1 downto 0)
 	);
 end component;
 
@@ -68,10 +65,7 @@ signal my_tsre: std_logic :='0';
 signal my_wrn: std_logic;
 signal my_light: std_logic_vector(7 downto 0);
 signal my_Ram1Data:std_logic_vector(7 downto 0);
-signal my_output_state:std_logic_vector(1 downto 0);
-signal my_write_machine_state: std_logic_vector(2 downto 0);
-signal my_start_ready:std_logic;
-signal my_write_clk: std_logic;
+signal output_state:std_logic_vector(1 downto 0);
 constant clk_period:time := 20ns;
 constant clk_auto_period:time := 1ns;
 
@@ -88,10 +82,7 @@ begin
 			tsre=>my_tsre,
 			wrn=>my_wrn,
 			Ram1Data=>my_Ram1Data,
-			output_state=>my_output_state,
-			output_start_ready=>my_start_ready,
-			write_machine_state=>my_write_machine_state,
-			output_write_clk=>my_write_clk
+			output_state=>output_state
 		);
 	
 	clk_auto_gen: process
